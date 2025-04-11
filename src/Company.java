@@ -1,4 +1,8 @@
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+
 
 public class Company {
     private HashMap<Integer, Employee> employeeHashMap;
@@ -16,8 +20,21 @@ public class Company {
     }
 
     public void printAllEmployee() {
-        for (Employee employee : employeeHashMap.values()) {
-            System.out.println("Employee ID: " + employee.getId() + ", Name: " + employee.getName() + ", Role: " + employee.getRole() + "  Salary = " + employee.getSalary());
+        List<Employee> employeeList = new ArrayList<>(employeeHashMap.values());
+        employeeList.sort(Comparator.comparingDouble(Employee::getSalary));
+
+        for (Employee employee : employeeList) {
+            System.out.println("Employee ID: " + employee.getId() +
+                    ", Name: " + employee.getName() +
+                    ", Role: " + employee.getRole() +
+                    ", Salary = " + employee.getSalary());
+
+
         }
     }
 }
+
+
+
+
+
