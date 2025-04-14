@@ -30,6 +30,8 @@ public class Company {
                     ", Salary = " + employee.getSalary());
 
 
+//Ausgabe hoursWorked
+
         }
     }
 }
