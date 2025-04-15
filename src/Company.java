@@ -1,42 +1,26 @@
-import java.util.List;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-
+import java.util.List;
 
 public class Company {
-    private HashMap<Integer, Employee> employeeHashMap;
-
-    public Company() {
-        employeeHashMap = new HashMap<>();
-    }
+    private List<Employee> employees = new ArrayList<>();
 
     public void addEmployee(Employee employee) {
-        employeeHashMap.put(employee.getId(), employee);
-    }
-
-    public Employee getEmployee(int id) {
-        return employeeHashMap.get(id);
+        employees.add(employee);
     }
 
     public void printAllEmployee() {
-        List<Employee> employeeList = new ArrayList<>(employeeHashMap.values());
-        employeeList.sort(Comparator.comparingDouble(Employee::getSalary));
+        employees.sort((e1, e2) -> Double.compare(e2.getSalary(), e1.getSalary()));
+        for (Employee employee : employees) {
+            System.out.println("Employee ID: " + employee.getID() + ", Name: " + employee.getName() +
+                    ", Role: " + employee.getRole() + ", Salary = " + employee.getSalary());
 
-        for (Employee employee : employeeList) {
-            System.out.println("Employee ID: " + employee.getId() +
-                    ", Name: " + employee.getName() +
-                    ", Role: " + employee.getRole() +
-                    ", Salary = " + employee.getSalary());
-
-
-//Ausgabe hoursWorked
-
+            if (employee instanceof PartTimeEmployee) {
+                PartTimeEmployee partTimeEmployee = (PartTimeEmployee) employee;
+                System.out.println("Workdays: " + partTimeEmployee.getWorkday());
+            } else {
+                System.out.println(" workdays : Full time employee"  );
+                System.out.println(" Hours per month : " + employee.getHourspermonth());
+            }
         }
     }
 }
-
-
-
-
-

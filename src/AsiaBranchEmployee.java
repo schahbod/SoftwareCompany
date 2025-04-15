@@ -7,17 +7,19 @@ public class AsiaBranchEmployee {
     private String name;
     private Employee.Role role;
     private double salary;
+    private Employee.AccessLevel accessLevel;
+
     private String timeZone = "Asia/Calcutta";
 
-    public AsiaBranchEmployee(int ID, String name, Employee.Role role, double salary) {
+    public AsiaBranchEmployee(int ID, String name, Employee.Role role, double salary, Employee.AccessLevel accessLevel) {
         this.ID = ID;
         this.name = name;
         this.role = role;
         this.salary = salary;
+        this.accessLevel = accessLevel;
     }
 
     public void work() {
-
         System.out.println(name + " is working as a " + role.toString() + " in the Asia branch.");
     }
 
@@ -44,5 +46,9 @@ public class AsiaBranchEmployee {
 
     public String getTimeZone() {
         return timeZone;
+    }
+
+    public boolean hasAccessTo(String resource) {
+        return accessLevel.hasAccessTo(resource, role, true);
     }
 }
