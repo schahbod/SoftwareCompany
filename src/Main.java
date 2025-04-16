@@ -72,5 +72,7 @@ public class Main {
         System.out.println("Can Tom access CodeBase? " + emp4.hasAccessTo("CodeBase"));
         System.out.println("Can Hun Son access AsiaPanel? " + asiaEmp1.hasAccessTo("AsiaPanel"));
         System.out.println("Can Xao access AsiaPanel? " + asiaEmp2.hasAccessTo("AsiaPanel"));
+
+        EmployeeGUI.main(args);
     }
 }
