@@ -103,7 +103,6 @@ public class EmployeeGUI extends Application {
 
         System.out.println("Filtered employees count: " + filteredList.size());
         return filteredList;
-
     }
 
     private String formatEmployeeList(List<Employee> employeeList) {
