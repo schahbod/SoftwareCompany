@@ -102,7 +102,6 @@ public class EmployeeGUI extends Application {
                 .collect(Collectors.toList());
 
         System.out.println("Filtered employees count: " + filteredList.size());
-
         return filteredList;
     }
 
