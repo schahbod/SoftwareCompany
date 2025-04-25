@@ -100,6 +100,7 @@ public class EmployeeGUI extends Application {
     }
 
 
+
     private void showHRLogin() {
         Stage loginStage = new Stage();
         loginStage.setTitle("HR Login");
