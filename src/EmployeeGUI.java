@@ -68,21 +68,42 @@ public class EmployeeGUI extends Application {
         showInfoButton.setOnAction(e -> {
             String selectedBranch = branchSelector.getValue();
             String searchText = searchField.getText().toLowerCase().trim();
+            if (selectedBranch == null) {
+                showPopup("Error", "Please select a branch.");
+                return;
+            }
             if ("HR Department".equals(selectedBranch)) {
                 showHRLogin();
             } else {
-                List<Employee> filteredList = filterEmployees(selectedBranch.equals("Asia Branch") ? AsiaBranchEmployee.class : Employee.class, searchText);
+                List<Employee> filteredList = filterEmployees(
+                        selectedBranch.equals("Asia Branch") ? AsiaBranchEmployee.class : Employee.class,
+                        searchText
+                );
                 showPopup(selectedBranch + " Employees", formatEmployeeList(filteredList));
             }
         });
     }
 
     private List<Employee> filterEmployees(Class<? extends Employee> employeeType, String searchText) {
-        return Employee.employees.stream()
-                .filter(emp -> employeeType.isAssignableFrom(emp.getClass()))
+        System.out.println("Filtering employees of type: " + employeeType.getSimpleName());
+
+        List<Employee> filteredList = Employee.employees.stream()
+                .filter(emp -> {
+                    System.out.println("Checking employee: " + emp.getName());
+                    if (employeeType == AsiaBranchEmployee.class) {
+                        return emp instanceof AsiaBranchEmployee;
+                    } else if (employeeType == Employee.class) {
+                        return !(emp instanceof AsiaBranchEmployee) && emp.getAccessLevel() != Employee.AccessLevel.HR_MANAGER;
+                    }
+                    return false;
+                })
                 .filter(emp -> searchText.isEmpty() || emp.getName().toLowerCase().contains(searchText))
                 .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
                 .collect(Collectors.toList());
+
+        System.out.println("Filtered employees count: " + filteredList.size());
+
+        return filteredList;
     }
 
     private String formatEmployeeList(List<Employee> employeeList) {
@@ -98,8 +119,6 @@ public class EmployeeGUI extends Application {
         }
         return content.toString();
     }
-
-
 
     private void showHRLogin() {
         Stage loginStage = new Stage();
@@ -149,6 +168,9 @@ public class EmployeeGUI extends Application {
     }
 
     private void showPopup(String title, String content) {
+        System.out.println("Showing popup with title: " + title);
+        System.out.println("Popup content:\n" + content);
+
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(title);

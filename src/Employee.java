@@ -8,13 +8,9 @@ public class Employee {
     private Role role;
     private double salary;
     private AccessLevel accessLevel;
-    private  int hourspermonth = 160;
+    private int hourspermonth = 160;
 
-    /// to do
     public static List<Employee> employees = new ArrayList<>();
-
-
-
 
     public Employee(String name, int ID, Role role, double salary, AccessLevel accessLevel) {
         this.name = name;
@@ -24,7 +20,7 @@ public class Employee {
         this.accessLevel = accessLevel;
     }
 
-    public int getHourspermonth () {
+    public int getHourspermonth() {
         return hourspermonth;
     }
 
