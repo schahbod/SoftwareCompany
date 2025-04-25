@@ -9,23 +9,45 @@ public class Main {
         Employee emp2 = new Employee("Shahbod", 485, Employee.Role.DEVELOPER, 4000, Employee.AccessLevel.Developer);
         PartTimeEmployee emp3 = new PartTimeEmployee("Anika", 500, Employee.Role.DESIGNER, 2500.0, 20, 5, Employee.AccessLevel.Employee);
         Employee emp4 = new Employee("Tom", 405, Employee.Role.MANAGER, 5500, Employee.AccessLevel.Manager);
+        AsiaBranchEmployee asiaEmp1 = new AsiaBranchEmployee(601, "Hun Son", Employee.Role.DEVELOPER, 3000, Employee.AccessLevel.Developer);
+        AsiaBranchEmployee asiaEmp2 = new AsiaBranchEmployee(602, "Xao", Employee.Role.MANAGER, 6000, Employee.AccessLevel.Manager);
+        Employee hrEmp = new Employee("Sabine", 701, Employee.Role.MANAGER, 5000, Employee.AccessLevel.HR_MANAGER);
 
         Employee.addEmployee(emp1);
         Employee.addEmployee(emp2);
+        Employee.addEmployee(emp3);
+        Employee.addEmployee(emp4);
+        Employee.addEmployee(asiaEmp1);
+        Employee.addEmployee(asiaEmp2);
+        Employee.addEmployee(hrEmp);
 
         myCompany.addEmployee(emp1);
         myCompany.addEmployee(emp2);
         myCompany.addEmployee(emp3);
         myCompany.addEmployee(emp4);
+        myCompany.addEmployee(asiaEmp1);
+        myCompany.addEmployee(asiaEmp2);
+        myCompany.addEmployee(hrEmp);
 
-        System.out.println("\n📋 EMPLOYEES SORTED BY SALARY:");
+        Employee.employees.forEach(emp -> System.out.println(" - " + emp.getName() + ": " + emp.getRole() + ", $" + emp.getSalary() + ", ID: " + emp.getID() + ", AccessLevel: " + emp.getAccessLevel()));
+
+        EmployeeGUI.main(args);
+
         myCompany.printAllEmployee();
-        System.out.println("\n Working Status");
+
+        DeveloperIterator developerIterator = new DeveloperIterator(Employee.employees);
+        while (developerIterator.hasNext()) {
+            Employee dev = developerIterator.next();
+            System.out.println(dev.getName() + " " + dev.getRole());
+        }
 
         emp1.work();
         emp2.work();
         emp3.work();
         emp4.work();
+        asiaEmp1.work();
+        asiaEmp2.work();
+        hrEmp.work();
 
         emp1.setHendynummer(152147485);
 
@@ -43,28 +65,7 @@ public class Main {
         AufgabeTicket aufgabeTicket4 = new AufgabeTicket("Project Management", emp4, duetime);
         aufgabeTicket4.setFertiggestellt(true);
 
-        System.out.println("Aufgabe ticket is for " + aufgabeTicket1.getTaskid() + " and he is working on " + emp1.getName() + " he is working on " + aufgabeTicket1.getBeschreibung());
-        System.out.println("Aufgabe ticket is for " + aufgabeTicket2.getTaskid() + " and She is working on " + aufgabeTicket2.getBeschreibung());
-        System.out.println("Aufgabe ticket is for " + aufgabe3.getTaskid() + " and he is working on " + aufgabe3.getBeschreibung());
-        System.out.println("Aufgabe ticket is for " + aufgabeTicket4.getTaskid() + " and he is working on " + aufgabeTicket4.getBeschreibung());
-
-        System.out.println("\n Aufgabe Details for Anika");
-        System.out.println("✅ Fertiggestellt: " + aufgabe3.isFertiggestellt());
-        System.out.println("Mitarbeiter: " + aufgabe3.getMitarbeiter().getName());
-        System.out.println("\uD83D\uDCDE " + aufgabe3.getMitarbeiter().getName() + " HendyNummer: " + aufgabe3.getMitarbeiter().getHendynummer());
-        System.out.println("✅ Fertiggestellt: " + aufgabe3.isFertiggestellt());
-        System.out.println("⏰ Erledigt um: " + aufgabe3.getErledigt());
-        System.out.println("\uD83D\uDCDD Status: " + aufgabe3.getStatus());
-        System.out.println("CICD status: " + aufgabeTicket1.getStatus());
-
         emp1.showTimeZoneDetails();
-
-        AsiaBranchEmployee asiaEmp1 = new AsiaBranchEmployee(601, "Hun Son", Employee.Role.DEVELOPER, 3000, Employee.AccessLevel.Developer);
-        AsiaBranchEmployee asiaEmp2 = new AsiaBranchEmployee(602, "Xao", Employee.Role.MANAGER, 6000, Employee.AccessLevel.Manager);
-
-        asiaEmp1.work();
-        asiaEmp2.work();
-
         asiaEmp1.showTimeZoneDetails();
         asiaEmp2.showTimeZoneDetails();
 
@@ -72,7 +73,5 @@ public class Main {
         System.out.println("Can Tom access CodeBase? " + emp4.hasAccessTo("CodeBase"));
         System.out.println("Can Hun Son access AsiaPanel? " + asiaEmp1.hasAccessTo("AsiaPanel"));
         System.out.println("Can Xao access AsiaPanel? " + asiaEmp2.hasAccessTo("AsiaPanel"));
-
-        EmployeeGUI.main(args);
     }
 }

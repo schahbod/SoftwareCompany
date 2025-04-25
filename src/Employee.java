@@ -10,7 +10,11 @@ public class Employee {
     private AccessLevel accessLevel;
     private  int hourspermonth = 160;
 
+    /// to do
     public static List<Employee> employees = new ArrayList<>();
+
+
+
 
     public Employee(String name, int ID, Role role, double salary, AccessLevel accessLevel) {
         this.name = name;
@@ -69,11 +73,11 @@ public class Employee {
     }
 
     public enum Role {
-        DEVELOPER, DESIGNER, MANAGER
+        DEVELOPER, DESIGNER, MANAGER, TESTER, HR
     }
 
     public enum AccessLevel {
-        Admin, Manager, Developer, Employee;
+        Admin, Manager, Developer, Employee, HR_MANAGER;
 
         public boolean hasAccessTo(String resource, Role role, boolean isAsiaBranch) {
             if (resource.equals("AdminPanel") && this == Admin) {
