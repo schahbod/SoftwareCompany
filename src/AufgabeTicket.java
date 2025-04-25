@@ -2,10 +2,12 @@ import java.time.LocalTime;
 
 
 public class AufgabeTicket {
+    private static  int taskcounter= 1;
     private String beschreibung;
     private boolean fertiggestellt;
     private Employee mitarbeiter;
     private String Status;
+    private int taskid;
 
 
     private LocalTime erstellungsDatum;
@@ -20,6 +22,7 @@ public class AufgabeTicket {
         this.erstellungsDatum = LocalTime.now();
         this.faelligkeitsDatum = faelligkeitsDatum;
         this.Status = "In Prozess";
+        this.taskid = taskcounter++;
     }
 
 
@@ -68,6 +71,10 @@ public class AufgabeTicket {
 
     public void setMitarbeiter (Employee mitarbeiter) {
         this.mitarbeiter = mitarbeiter;
+    }
+
+    public int getTaskid(){
+        return taskid;
     }
 }
 

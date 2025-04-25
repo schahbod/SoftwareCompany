@@ -1,83 +1,95 @@
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.LinkedList;
+import java.util.List;
+import java.util.ArrayList;
 
-public class Employee extends Person {
+public class Employee {
+
+    private String name;
+    private int ID;
     private Role role;
     private double salary;
-    private int hendynummer;
-    private static LinkedList<Employee> employeeLinkedList = new LinkedList<>();
+    private AccessLevel accessLevel;
+    private  int hourspermonth = 160;
 
-    public enum Role {
-        DEVELOPER, DESIGNER, MANAGER, TESTER
-    }
+    /// to do
+    public static List<Employee> employees = new ArrayList<>();
 
-    public Employee(String name, int id, Role role, double salary) {
-        super(name, id);
+
+
+
+    public Employee(String name, int ID, Role role, double salary, AccessLevel accessLevel) {
+        this.name = name;
+        this.ID = ID;
         this.role = role;
         this.salary = salary;
+        this.accessLevel = accessLevel;
+    }
+
+    public int getHourspermonth () {
+        return hourspermonth;
+    }
+
+    public static void addEmployee(Employee emp) {
+        employees.add(emp);
+    }
+
+    public void work() {
+        System.out.println(name + " is working as a " + role.toString());
+    }
+
+    public boolean hasAccessTo(String resource) {
+        return accessLevel.hasAccessTo(resource, role, false);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getID() {
+        return ID;
     }
 
     public Role getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
     public double getSalary() {
         return salary;
     }
 
-    public void setSalary(double salary) {
-        this.salary = salary;
-    }
-
-    public int getHendynummer() {
-        return hendynummer;
+    public AccessLevel getAccessLevel() {
+        return accessLevel;
     }
 
     public void setHendynummer(int hendynummer) {
-        this.hendynummer = hendynummer;
+        this.ID = hendynummer;
+    }
+
+    public int getHendynummer() {
+        return this.ID;
     }
 
     public void showTimeZoneDetails() {
-        ZoneId zoneId = ZoneId.of("Europe/Berlin"); // Example for EU
-        ZonedDateTime currentTime = ZonedDateTime.now(zoneId);
-        System.out.println("Time Zone: " + zoneId);
-        System.out.println("Current UTC Offset: " + currentTime.getOffset());
+        System.out.println(name + " is located in a timezone with a specific offset.");
     }
 
-    @Override
-    public String toString() {
-        return getName();
+    public enum Role {
+        DEVELOPER, DESIGNER, MANAGER, TESTER, HR
     }
 
-    public void work() {
-        System.out.println(getName() + " is working as a " + role);
-    }
+    public enum AccessLevel {
+        Admin, Manager, Developer, Employee, HR_MANAGER;
 
-    public static void addEmployee(Employee emp) {
-        employeeLinkedList.add(emp);
-    }
-
-    public static void removeEmployee(Employee emp) {
-        employeeLinkedList.remove(emp);
-    }
-
-    public void displayAllEmployee() {
-        for (Employee emp : employeeLinkedList) {
-            System.out.println("Employee name: " + emp.getName() + ", Role: " + emp.getRole());
-        }
-    }
-
-    public static class EmployeeDetails {
-        public void displayDetails(Employee emp) {
-            System.out.println("Employee Name: " + emp.getName());
-            System.out.println("Employee ID: " + emp.getId());
-            System.out.println("Employee Role: " + emp.role);
-            System.out.println("Employee Salary: " + emp.salary);
+        public boolean hasAccessTo(String resource, Role role, boolean isAsiaBranch) {
+            if (resource.equals("AdminPanel") && this == Admin) {
+                return true;
+            } else if (resource.equals("CodeBase") && (this == Developer || this == Admin)) {
+                return true;
+            } else if (resource.equals("Designs") && (role == Role.DESIGNER || this == Admin)) {
+                return true;
+            } else if (isAsiaBranch && resource.equals("AsiaPanel")) {
+                return this == Admin || this == Manager;
+            }
+            return false;
         }
     }
 }
