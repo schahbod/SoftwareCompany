@@ -1,4 +1,5 @@
 import java.time.LocalTime;
+import javafx.application.Application;
 
 public class Main {
 
@@ -31,7 +32,7 @@ public class Main {
 
         Employee.employees.forEach(emp -> System.out.println(" - " + emp.getName() + ": " + emp.getRole() + ", $" + emp.getSalary() + ", ID: " + emp.getID() + ", AccessLevel: " + emp.getAccessLevel()));
 
-        EmployeeGUI.main(args);
+        Application.launch(EmployeeGUI.class, args);
 
         myCompany.printAllEmployee();
 
