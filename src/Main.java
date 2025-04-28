@@ -1,5 +1,4 @@
 import java.time.LocalTime;
-import javafx.application.Application;
 
 public class Main {
 
@@ -30,10 +29,31 @@ public class Main {
         myCompany.addEmployee(asiaEmp2);
         myCompany.addEmployee(hrEmp);
 
+        LocalTime duetime = LocalTime.of(12, 0);
+
+        AufgabeTicket aufgabeTicket1 = new AufgabeTicket("CICD Setup", emp1, duetime);
+        aufgabeTicket1.setFertiggestellt(true);
+        emp1.addTicket(aufgabeTicket1);
+        System.out.println("Domenik tickets after add: " + emp1.getTickets());
+
+        AufgabeTicket aufgabeTicket2 = new AufgabeTicket("API Development", emp2, duetime);
+        aufgabeTicket2.setFertiggestellt(true);
+        emp2.addTicket(aufgabeTicket2);
+        System.out.println("Shahbod tickets after add: " + emp2.getTickets());
+
+        AufgabeTicket aufgabe3 = new AufgabeTicket("UI-Design erstellen", emp3, duetime);
+        aufgabe3.setFertiggestellt(true);
+        emp3.addTicket(aufgabe3);
+        System.out.println("Anika tickets after add: " + emp3.getTickets());
+
+        AufgabeTicket aufgabeTicket4 = new AufgabeTicket("Project Management", emp4, duetime);
+        aufgabeTicket4.setFertiggestellt(true);
+        emp4.addTicket(aufgabeTicket4);
+        System.out.println("Tom tickets after add: " + emp4.getTickets());
+
+        EmployeeGUI.main(args);
+
         Employee.employees.forEach(emp -> System.out.println(" - " + emp.getName() + ": " + emp.getRole() + ", $" + emp.getSalary() + ", ID: " + emp.getID() + ", AccessLevel: " + emp.getAccessLevel()));
-
-        Application.launch(EmployeeGUI.class, args);
-
         myCompany.printAllEmployee();
 
         DeveloperIterator developerIterator = new DeveloperIterator(Employee.employees);
@@ -51,20 +71,6 @@ public class Main {
         hrEmp.work();
 
         emp1.setHendynummer(152147485);
-
-        LocalTime duetime = LocalTime.of(12, 0);
-
-        AufgabeTicket aufgabeTicket1 = new AufgabeTicket("CICD Setup", emp1, duetime);
-        aufgabeTicket1.setFertiggestellt(true);
-
-        AufgabeTicket aufgabeTicket2 = new AufgabeTicket("API Development", emp2, duetime);
-        aufgabeTicket2.setFertiggestellt(true);
-
-        AufgabeTicket aufgabe3 = new AufgabeTicket("UI-Design erstellen", emp3, duetime);
-        aufgabe3.setFertiggestellt(true);
-
-        AufgabeTicket aufgabeTicket4 = new AufgabeTicket("Project Management", emp4, duetime);
-        aufgabeTicket4.setFertiggestellt(true);
 
         emp1.showTimeZoneDetails();
         asiaEmp1.showTimeZoneDetails();

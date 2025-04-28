@@ -1,5 +1,5 @@
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Employee {
 
@@ -9,6 +9,8 @@ public class Employee {
     private double salary;
     private AccessLevel accessLevel;
     private int hourspermonth = 160;
+    private List<AufgabeTicket> tickets = new ArrayList<>();
+    private int hendynummer;
 
     public static List<Employee> employees = new ArrayList<>();
 
@@ -20,20 +22,16 @@ public class Employee {
         this.accessLevel = accessLevel;
     }
 
-    public int getHourspermonth() {
-        return hourspermonth;
+    public static void addEmployee(Employee employee) {
+        employees.add(employee);
     }
 
-    public static void addEmployee(Employee emp) {
-        employees.add(emp);
+    public void addTicket(AufgabeTicket ticket) {
+        tickets.add(ticket);
     }
 
-    public void work() {
-        System.out.println(name + " is working as a " + role.toString());
-    }
-
-    public boolean hasAccessTo(String resource) {
-        return accessLevel.hasAccessTo(resource, role, false);
+    public List<AufgabeTicket> getTickets() {
+        return tickets;
     }
 
     public String getName() {
@@ -56,16 +54,24 @@ public class Employee {
         return accessLevel;
     }
 
+    public void work() {
+        System.out.println(name + " is working on tasks.");
+    }
+
     public void setHendynummer(int hendynummer) {
-        this.ID = hendynummer;
+        this.hendynummer = hendynummer;
     }
 
     public int getHendynummer() {
-        return this.ID;
+        return hendynummer;
     }
 
     public void showTimeZoneDetails() {
-        System.out.println(name + " is located in a timezone with a specific offset.");
+        System.out.println(name + " is in the default time zone.");
+    }
+
+    public boolean hasAccessTo(String resource) {
+        return accessLevel.hasAccessTo(resource);
     }
 
     public enum Role {
@@ -75,15 +81,13 @@ public class Employee {
     public enum AccessLevel {
         Admin, Manager, Developer, Employee, HR_MANAGER;
 
-        public boolean hasAccessTo(String resource, Role role, boolean isAsiaBranch) {
+        public boolean hasAccessTo(String resource) {
             if (resource.equals("AdminPanel") && this == Admin) {
                 return true;
             } else if (resource.equals("CodeBase") && (this == Developer || this == Admin)) {
                 return true;
-            } else if (resource.equals("Designs") && (role == Role.DESIGNER || this == Admin)) {
+            } else if (resource.equals("Designs") && (this == Manager || this == Admin)) {
                 return true;
-            } else if (isAsiaBranch && resource.equals("AsiaPanel")) {
-                return this == Admin || this == Manager;
             }
             return false;
         }

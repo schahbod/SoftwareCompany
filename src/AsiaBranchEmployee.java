@@ -2,7 +2,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 public class AsiaBranchEmployee extends Employee {
-
     private String timeZone = "Asia/Calcutta";
 
     public AsiaBranchEmployee(int ID, String name, Employee.Role role, double salary, Employee.AccessLevel accessLevel) {
@@ -14,6 +13,7 @@ public class AsiaBranchEmployee extends Employee {
         System.out.println(getName() + " is working as a " + getRole().toString() + " in the Asia branch.");
     }
 
+    @Override
     public void showTimeZoneDetails() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.of(timeZone));
         System.out.println("Employee " + getName() + "'s current time in " + timeZone + ": " + now);
@@ -25,6 +25,6 @@ public class AsiaBranchEmployee extends Employee {
 
     @Override
     public boolean hasAccessTo(String resource) {
-        return getAccessLevel().hasAccessTo(resource, getRole(), true);
+        return getAccessLevel().hasAccessTo(resource);
     }
 }
