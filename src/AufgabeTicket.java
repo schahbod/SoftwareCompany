@@ -21,11 +21,11 @@ public class AufgabeTicket {
         return dueTime;
     }
 
-    public void setFertiggestellt(boolean fertiggestellt) {
-        this.fertiggestellt = fertiggestellt;
-    }
-
     public boolean getFertiggestellt() {
         return fertiggestellt;
+    }
+
+    public void setFertiggestellt(boolean fertiggestellt) {
+        this.fertiggestellt = fertiggestellt;
     }
 }

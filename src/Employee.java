@@ -1,3 +1,6 @@
+import java.time.LocalTime;
+import java.time.Duration;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +14,7 @@ public class Employee {
     private int hourspermonth = 160;
     private List<AufgabeTicket> tickets = new ArrayList<>();
     private int hendynummer;
+    private WorkSchedule workSchedule;
 
     public static List<Employee> employees = new ArrayList<>();
 
@@ -20,6 +24,47 @@ public class Employee {
         this.role = role;
         this.salary = salary;
         this.accessLevel = accessLevel;
+        this.workSchedule = new WorkSchedule();
+    }
+
+    public void assignWorkSchedule(String[] startInputs, String[] endInputs) {
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+        for (int i = 0; i < 5; i++) {
+            if (startInputs[i].isEmpty() || endInputs[i].isEmpty()) {
+                workSchedule.setWorkHours(i, null, null); // Clear unset days
+                continue;
+            }
+            try {
+                LocalTime startTime = LocalTime.parse(startInputs[i]);
+                LocalTime endTime = LocalTime.parse(endInputs[i]);
+                if (endTime.isBefore(startTime) || endTime.equals(startTime)) {
+                    throw new IllegalArgumentException("End time must be after start time for " + days[i]);
+                }
+                workSchedule.setWorkHours(i, startTime, endTime);
+            } catch (DateTimeParseException e) {
+                workSchedule.setWorkHours(i, LocalTime.of(9, 0), LocalTime.of(17, 0));
+            }
+        }
+    }
+
+    public double calculateTotalWorkHours() {
+        double totalHours = 0.0;
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+        for (int i = 0; i < 5; i++) {
+            LocalTime start = workSchedule.getStartTime(i);
+            LocalTime end = workSchedule.getEndTime(i);
+            if (start != null && end != null) {
+                Duration duration = Duration.between(start, end);
+                double hours = duration.toHours() + (duration.toMinutes() % 60) / 60.0;
+                totalHours += hours;
+                System.out.println("Employee: " + days[i] + " hours = " + hours + ", Total so far = " + totalHours);
+            }
+        }
+        return totalHours;
+    }
+
+    public WorkSchedule getWorkSchedule() {
+        return workSchedule;
     }
 
     public static void addEmployee(Employee employee) {
@@ -72,6 +117,11 @@ public class Employee {
 
     public boolean hasAccessTo(String resource) {
         return accessLevel.hasAccessTo(resource);
+    }
+
+    public String getGuiInfo() {
+        return "Name " + getName() + "\nID" + getID() + "\nRole" + getRole() +
+                "\nSalary" + getSalary() + "\nAccess Level " + getAccessLevel();
     }
 
     public enum Role {

@@ -4,14 +4,14 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
 import javafx.util.Duration;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
-import javafx.util.StringConverter;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,6 +48,7 @@ public class EmployeeGUI extends Application {
         buttonBox.setAlignment(Pos.CENTER);
 
         showInfoButton.setOnAction(event -> {
+            ticketListView.getItems().clear();
             String searchText = searchField.getText().toLowerCase().trim();
             Employee selectedEmployee = null;
 
@@ -65,12 +66,8 @@ public class EmployeeGUI extends Application {
                 return;
             }
 
-            List<String> employeeInfo = Arrays.asList(
-                    "Employee ID: " + selectedEmployee.getID(),
-                    "Role: " + selectedEmployee.getRole(),
-                    "Salary: $" + selectedEmployee.getSalary()
-            );
-            ticketListView.getItems().addAll(employeeInfo);
+            String[] lines = selectedEmployee.getGuiInfo().split("\n");
+            ticketListView.getItems().addAll(lines);
 
             List<AufgabeTicket> tickets = selectedEmployee.getTickets();
             if (tickets == null || tickets.isEmpty()) {
@@ -82,6 +79,91 @@ public class EmployeeGUI extends Application {
                         .collect(Collectors.toList());
                 ticketListView.getItems().addAll(ticketDescriptions);
             }
+
+            WorkSchedule schedule = selectedEmployee.getWorkSchedule();
+            if (schedule != null) {
+                String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+                ticketListView.getItems().add("Work Schedule:");
+                for (int i = 0; i < 5; i++) {
+                    String start = (schedule.getStartTime(i) != null) ? schedule.getStartTime(i).toString() : "Not Set";
+                    String end = (schedule.getEndTime(i) != null) ? schedule.getEndTime(i).toString() : "Not Set";
+                    ticketListView.getItems().add(days[i] + ": " + start + " to " + end);
+                }
+                ticketListView.getItems().add("Total Work Hours: " + selectedEmployee.calculateTotalWorkHours() + " hours/week");
+            }
+
+            Employee finalSelectedEmployee = selectedEmployee;
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(primaryStage);
+            dialog.setTitle("Enter Work Schedule for " + finalSelectedEmployee.getName());
+
+            GridPane grid = new GridPane();
+            grid.setPadding(new Insets(10));
+            grid.setHgap(10);
+            grid.setVgap(10);
+
+            String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+            TextField[] startFields = new TextField[5];
+            TextField[] endFields = new TextField[5];
+
+            for (int i = 0; i < 5; i++) {
+                startFields[i] = new TextField();
+                startFields[i].setPromptText("HH:mm (e.g., 09:00)");
+                endFields[i] = new TextField();
+                endFields[i].setPromptText("HH:mm (e.g., 17:00)");
+                grid.add(new Label(days[i] + " Start:"), 0, i);
+                grid.add(startFields[i], 1, i);
+                grid.add(new Label("End:"), 2, i);
+                grid.add(endFields[i], 3, i);
+            }
+
+            Label errorLabel = new Label();
+            errorLabel.setStyle("-fx-text-fill: red;");
+
+            Button submitButton = new Button("Submit Schedule");
+            submitButton.setOnAction(e -> {
+                String[] startInputs = new String[5];
+                String[] endInputs = new String[5];
+                for (int i = 0; i < 5; i++) {
+                    startInputs[i] = startFields[i].getText().trim();
+                    endInputs[i] = endFields[i].getText().trim();
+                }
+                try {
+                    finalSelectedEmployee.assignWorkSchedule(startInputs, endInputs);
+                    dialog.close();
+
+                    ticketListView.getItems().clear();
+                    ticketListView.getItems().addAll(lines);
+                    List<AufgabeTicket> updatedTickets = finalSelectedEmployee.getTickets();
+                    if (updatedTickets != null && !updatedTickets.isEmpty()) {
+                        List<String> updatedTicketDescriptions = updatedTickets.stream()
+                                .map(ticket -> ticket.getDescription() + " - Due: " + ticket.getDueTime() +
+                                        (ticket.getFertiggestellt() ? " (Completed)" : ""))
+                                .collect(Collectors.toList());
+                        ticketListView.getItems().addAll(updatedTicketDescriptions);
+                    } else {
+                        ticketListView.getItems().add("No tickets found for " + finalSelectedEmployee.getName());
+                    }
+                    ticketListView.getItems().add("Work Schedule:");
+                    for (int i = 0; i < 5; i++) {
+                        String start = (schedule.getStartTime(i) != null) ? schedule.getStartTime(i).toString() : "Not Set";
+                        String end = (schedule.getEndTime(i) != null) ? schedule.getEndTime(i).toString() : "Not Set";
+                        ticketListView.getItems().add(days[i] + ": " + start + " to " + end);
+                    }
+                    ticketListView.getItems().add("Total Work Hours: " + finalSelectedEmployee.calculateTotalWorkHours() + " hours/week");
+                } catch (IllegalArgumentException ex) {
+                    errorLabel.setText(ex.getMessage());
+                }
+            });
+
+            VBox dialogVBox = new VBox(10, grid, errorLabel, submitButton);
+            dialogVBox.setAlignment(Pos.CENTER);
+            dialogVBox.setPadding(new Insets(10));
+
+            Scene dialogScene = new Scene(dialogVBox, 400, 350);
+            dialog.setScene(dialogScene);
+            dialog.showAndWait();
         });
 
         VBox inputBox = new VBox(10, branchSelector, searchField);
