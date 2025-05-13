@@ -1,28 +1,32 @@
+import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 
-public class DeveloperIterator implements EmployeeIterator {
+public class DeveloperIterator implements Iterator<Employee> {
+
     private List<Employee> employees;
-    private int position = 0;
+    private int currentIndex = 0;
 
     public DeveloperIterator(List<Employee> employees) {
         this.employees = employees;
+        findNextDeveloper();
+    }
+
+    private void findNextDeveloper() {
+        while (currentIndex < employees.size() && employees.get(currentIndex).getRole() != Employee.Role.DEVELOPER) {
+            currentIndex++;
+        }
     }
 
     @Override
     public boolean hasNext() {
-        while (position < employees.size()) {
-            if (employees.get(position).getRole() == Employee.Role.DEVELOPER) {
-                return true;
-            }
-            position++;
-        }
-        return false;
+        return currentIndex < employees.size();
     }
 
     @Override
     public Employee next() {
-        if (!hasNext()) throw new NoSuchElementException();
-        return employees.get(position++);
+        Employee dev = employees.get(currentIndex);
+        currentIndex++;
+        findNextDeveloper();
+        return dev;
     }
 }
