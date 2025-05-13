@@ -1,17 +1,17 @@
 import javafx.animation.ScaleTransition;
 import javafx.application.Application;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.stage.Modality;
 import javafx.util.Duration;
-import javafx.scene.input.MouseEvent;
 import javafx.geometry.Pos;
-
+import javafx.geometry.Insets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -19,141 +19,178 @@ public class EmployeeGUI extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        StackPane root = new StackPane();
+        VBox root = new VBox(10);
+        root.setPadding(new Insets(10));
+        root.setAlignment(Pos.CENTER);
 
         Label backgroundLabel = new Label("RieckSoftwareCompany");
-        backgroundLabel.setFont(Font.font("Arial", FontWeight.BOLD, 25));
+        backgroundLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
         backgroundLabel.setStyle("-fx-text-fill: DodgerBlue;");
-        StackPane.setAlignment(backgroundLabel, Pos.TOP_CENTER);
 
         ComboBox<String> branchSelector = new ComboBox<>();
         branchSelector.getItems().addAll("Main Branch", "Asia Branch", "HR Department");
-        branchSelector.setMaxWidth(200);
+        branchSelector.setPrefWidth(150);
+        branchSelector.setPromptText("Select Branch");
 
         TextField searchField = new TextField();
         searchField.setPromptText("Search by name");
+        searchField.setPrefWidth(150);
 
-        Button showInfoButton = new Button("Show Employee Info");
+        ListView<String> ticketListView = new ListView<>();
+        ticketListView.setPrefHeight(150);
+        ticketListView.setPrefWidth(300);
 
-        showInfoButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent event) {
-                ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(200), showInfoButton);
-                scaleTransition.setToX(1.1);
-                scaleTransition.setToY(1.1);
-                scaleTransition.play();
+        Button showInfoButton = new Button("Show Employee Info & Tickets");
+        showInfoButton.setStyle("-fx-font-size: 12px; -fx-padding: 5 10;");
+        styleButton(showInfoButton);
+
+        HBox buttonBox = new HBox(10, showInfoButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
+        showInfoButton.setOnAction(event -> {
+            ticketListView.getItems().clear();
+            String searchText = searchField.getText().toLowerCase().trim();
+            Employee selectedEmployee = null;
+
+            if (!searchText.isEmpty()) {
+                List<Employee> matchingEmployees = Employee.employees.stream()
+                        .filter(emp -> emp.getName().toLowerCase().contains(searchText))
+                        .collect(Collectors.toList());
+                if (!matchingEmployees.isEmpty()) {
+                    selectedEmployee = matchingEmployees.get(0);
+                }
             }
+
+            if (selectedEmployee == null) {
+                ticketListView.getItems().add("No matching employee found.");
+                return;
+            }
+
+            String[] lines = selectedEmployee.getGuiInfo().split("\n");
+            ticketListView.getItems().addAll(lines);
+
+            List<AufgabeTicket> tickets = selectedEmployee.getTickets();
+            if (tickets == null || tickets.isEmpty()) {
+                ticketListView.getItems().add("No tickets found for " + selectedEmployee.getName());
+            } else {
+                List<String> ticketDescriptions = tickets.stream()
+                        .map(ticket -> ticket.getDescription() + " - Due: " + ticket.getDueTime() +
+                                (ticket.getFertiggestellt() ? " (Completed)" : ""))
+                        .collect(Collectors.toList());
+                ticketListView.getItems().addAll(ticketDescriptions);
+            }
+
+            WorkSchedule schedule = selectedEmployee.getWorkSchedule();
+            if (schedule != null) {
+                String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+                ticketListView.getItems().add("Work Schedule:");
+                for (int i = 0; i < 5; i++) {
+                    String start = (schedule.getStartTime(i) != null) ? schedule.getStartTime(i).toString() : "Not Set";
+                    String end = (schedule.getEndTime(i) != null) ? schedule.getEndTime(i).toString() : "Not Set";
+                    ticketListView.getItems().add(days[i] + ": " + start + " to " + end);
+                }
+                ticketListView.getItems().add("Total Work Hours: " + selectedEmployee.calculateTotalWorkHours() + " hours/week");
+            }
+
+            Employee finalSelectedEmployee = selectedEmployee;
+            Stage dialog = new Stage();
+            dialog.initModality(Modality.APPLICATION_MODAL);
+            dialog.initOwner(primaryStage);
+            dialog.setTitle("Enter Work Schedule for " + finalSelectedEmployee.getName());
+
+            GridPane grid = new GridPane();
+            grid.setPadding(new Insets(10));
+            grid.setHgap(10);
+            grid.setVgap(10);
+
+            String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"};
+            TextField[] startFields = new TextField[5];
+            TextField[] endFields = new TextField[5];
+
+            for (int i = 0; i < 5; i++) {
+                startFields[i] = new TextField();
+                startFields[i].setPromptText("HH:mm (e.g., 09:00)");
+                endFields[i] = new TextField();
+                endFields[i].setPromptText("HH:mm (e.g., 17:00)");
+                grid.add(new Label(days[i] + " Start:"), 0, i);
+                grid.add(startFields[i], 1, i);
+                grid.add(new Label("End:"), 2, i);
+                grid.add(endFields[i], 3, i);
+            }
+
+            Label errorLabel = new Label();
+            errorLabel.setStyle("-fx-text-fill: red;");
+
+            Button submitButton = new Button("Submit Schedule");
+            submitButton.setOnAction(e -> {
+                String[] startInputs = new String[5];
+                String[] endInputs = new String[5];
+                for (int i = 0; i < 5; i++) {
+                    startInputs[i] = startFields[i].getText().trim();
+                    endInputs[i] = endFields[i].getText().trim();
+                }
+                try {
+                    finalSelectedEmployee.assignWorkSchedule(startInputs, endInputs);
+                    dialog.close();
+
+                    ticketListView.getItems().clear();
+                    ticketListView.getItems().addAll(lines);
+                    List<AufgabeTicket> updatedTickets = finalSelectedEmployee.getTickets();
+                    if (updatedTickets != null && !updatedTickets.isEmpty()) {
+                        List<String> updatedTicketDescriptions = updatedTickets.stream()
+                                .map(ticket -> ticket.getDescription() + " - Due: " + ticket.getDueTime() +
+                                        (ticket.getFertiggestellt() ? " (Completed)" : ""))
+                                .collect(Collectors.toList());
+                        ticketListView.getItems().addAll(updatedTicketDescriptions);
+                    } else {
+                        ticketListView.getItems().add("No tickets found for " + finalSelectedEmployee.getName());
+                    }
+                    ticketListView.getItems().add("Work Schedule:");
+                    for (int i = 0; i < 5; i++) {
+                        String start = (schedule.getStartTime(i) != null) ? schedule.getStartTime(i).toString() : "Not Set";
+                        String end = (schedule.getEndTime(i) != null) ? schedule.getEndTime(i).toString() : "Not Set";
+                        ticketListView.getItems().add(days[i] + ": " + start + " to " + end);
+                    }
+                    ticketListView.getItems().add("Total Work Hours: " + finalSelectedEmployee.calculateTotalWorkHours() + " hours/week");
+                } catch (IllegalArgumentException ex) {
+                    errorLabel.setText(ex.getMessage());
+                }
+            });
+
+            VBox dialogVBox = new VBox(10, grid, errorLabel, submitButton);
+            dialogVBox.setAlignment(Pos.CENTER);
+            dialogVBox.setPadding(new Insets(10));
+
+            Scene dialogScene = new Scene(dialogVBox, 400, 350);
+            dialog.setScene(dialogScene);
+            dialog.showAndWait();
         });
 
-        showInfoButton.setOnMouseExited(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent e) {
-                ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(200), showInfoButton);
-                scaleTransition.setToX(1);
-                scaleTransition.setToY(1);
-                scaleTransition.play();
-            }
-        });
+        VBox inputBox = new VBox(10, branchSelector, searchField);
+        inputBox.setAlignment(Pos.CENTER);
 
-        VBox vbox = new VBox(10, branchSelector, searchField, showInfoButton);
-        vbox.setStyle("-fx-padding: 20;");
-        vbox.setAlignment(Pos.CENTER);
-        StackPane.setAlignment(vbox, Pos.CENTER);
+        root.getChildren().addAll(backgroundLabel, inputBox, buttonBox, ticketListView);
 
-        root.getChildren().addAll(backgroundLabel, vbox);
-
-        Scene scene = new Scene(root, 400, 300);
+        Scene scene = new Scene(root, 600, 400);
         primaryStage.setTitle("Employee GUI");
         primaryStage.setScene(scene);
         primaryStage.show();
-
-        showInfoButton.setOnAction(e -> {
-            String selectedBranch = branchSelector.getValue();
-            String searchText = searchField.getText().toLowerCase().trim();
-            if ("HR Department".equals(selectedBranch)) {
-                showHRLogin();
-            } else {
-                List<Employee> filteredList = filterEmployees(selectedBranch.equals("Asia Branch") ? AsiaBranchEmployee.class : Employee.class, searchText);
-                showPopup(selectedBranch + " Employees", formatEmployeeList(filteredList));
-            }
-        });
     }
 
-    private List<Employee> filterEmployees(Class<? extends Employee> employeeType, String searchText) {
-        return Employee.employees.stream()
-                .filter(emp -> employeeType.isAssignableFrom(emp.getClass()))
-                .filter(emp -> searchText.isEmpty() || emp.getName().toLowerCase().contains(searchText))
-                .sorted(Comparator.comparingDouble(Employee::getSalary).reversed())
-                .collect(Collectors.toList());
-    }
-
-    private String formatEmployeeList(List<Employee> employeeList) {
-        if (employeeList.isEmpty()) {
-            return "No employees found for the given search criteria.";
-        }
-        StringBuilder content = new StringBuilder();
-        for (Employee emp : employeeList) {
-            content.append(emp.getName()).append(": ")
-                    .append(emp.getRole()).append(", $")
-                    .append(emp.getSalary()).append(", ID: ")
-                    .append(emp.getID()).append("\n");
-        }
-        return content.toString();
-    }
-
-
-
-    private void showHRLogin() {
-        Stage loginStage = new Stage();
-        loginStage.setTitle("HR Login");
-
-        Label userLabel = new Label("Username: ");
-        TextField usernameField = new TextField();
-
-        Label passLabel = new Label("Password: ");
-        PasswordField passwordField = new PasswordField();
-
-        Button loginButton = new Button("Login");
-        Label messageLabel = new Label();
-
-        loginButton.setOnAction(new EventHandler<javafx.event.ActionEvent>() {
-            public void handle(javafx.event.ActionEvent event) {
-                String username = usernameField.getText();
-                String password = passwordField.getText();
-
-                if (username.equals("Admin") && password.equals("hr123")) {
-                    messageLabel.setText("Login successful");
-                    loginStage.close();
-
-                    List<Employee> hrEmployees = Employee.employees.stream()
-                            .filter(emp -> emp.getAccessLevel() == Employee.AccessLevel.HR_MANAGER)
-                            .collect(Collectors.toList());
-
-                    if (hrEmployees.isEmpty()) {
-                        showPopup("HR Department", "No HR employees found.");
-                    } else {
-                        showPopup("HR Department", formatEmployeeList(hrEmployees));
-                    }
-
-                } else {
-                    messageLabel.setText("Login failed. Try again.");
-                }
-            }
+    private void styleButton(Button button) {
+        button.setOnMouseEntered(event -> {
+            ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(200), button);
+            scaleTransition.setToX(1.1);
+            scaleTransition.setToY(1.1);
+            scaleTransition.play();
         });
 
-        VBox vbox = new VBox(10, userLabel, usernameField, passLabel, passwordField, loginButton, messageLabel);
-        vbox.setStyle("-fx-padding: 20;");
-        vbox.setAlignment(Pos.CENTER);
-
-        Scene scene = new Scene(vbox, 300, 250);
-        loginStage.setScene(scene);
-        loginStage.show();
-    }
-
-    private void showPopup(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(title);
-        alert.setContentText(content);
-        alert.showAndWait();
+        button.setOnMouseExited(event -> {
+            ScaleTransition scaleTransition = new ScaleTransition(Duration.millis(200), button);
+            scaleTransition.setToX(1);
+            scaleTransition.setToY(1);
+            scaleTransition.play();
+        });
     }
 
     public static void main(String[] args) {
